@@ -50,8 +50,8 @@ import io.camunda.zeebe.broker.system.configuration.ThreadsCfg;
 import io.camunda.zeebe.broker.system.configuration.backpressure.RateLimitCfg;
 import io.camunda.zeebe.broker.system.configuration.backpressure.ThrottleCfg;
 import io.camunda.zeebe.broker.system.configuration.backup.AzureBackupStoreConfig;
-import io.camunda.zeebe.broker.system.configuration.backup.BackupStoreCfg;
-import io.camunda.zeebe.broker.system.configuration.backup.BackupStoreCfg.BackupStoreType;
+import io.camunda.zeebe.broker.system.configuration.backup.BackupCfg;
+import io.camunda.zeebe.broker.system.configuration.backup.BackupCfg.BackupStoreType;
 import io.camunda.zeebe.broker.system.configuration.backup.FilesystemBackupStoreConfig;
 import io.camunda.zeebe.broker.system.configuration.backup.GcsBackupStoreConfig;
 import io.camunda.zeebe.broker.system.configuration.backup.GcsBackupStoreConfig.GcsBackupStoreAuth;
@@ -491,15 +491,15 @@ public class BrokerBasedPropertiesOverride {
 
   private void populateFromBackup(final BrokerBasedProperties override) {
     final Backup backup = unifiedConfiguration.getCamunda().getData().getBackup();
-    final BackupStoreCfg backupStoreCfg = override.getData().getBackup();
-    backupStoreCfg.setStore(BackupStoreType.valueOf(backup.getStore().name()));
+    final BackupCfg backupCfg = override.getData().getBackup();
+    backupCfg.setStore(BackupStoreType.valueOf(backup.getStore().name()));
 
     populateFromS3(override);
     populateFromGcs(override);
     populateFromAzure(override);
     populateFromFilesystem(override);
 
-    override.getData().setBackup(backupStoreCfg);
+    override.getData().setBackup(backupCfg);
   }
 
   private void populateFromS3(final BrokerBasedProperties override) {
