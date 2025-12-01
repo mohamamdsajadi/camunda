@@ -669,6 +669,7 @@ public final class PartitionManagerImpl
   private static SharedRocksDbResources getSharedCache(final BrokerCfg brokerCfg) {
     final long totalMemorySize =
         ((OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean()).getTotalMemorySize();
+    LOGGER.info("Logging total memory size: {}", totalMemorySize);
     // Heap by default is 25% of the RAM, and off-heap (unless configured otherwise) is the same.
     // So 50% of your RAM goes to the JVM, for both heap and off-heap (aka direct) memory.
     // Leaving 50% of RAM for OS page cache and other processes.
