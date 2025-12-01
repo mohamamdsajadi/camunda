@@ -120,7 +120,7 @@ public final class JobEventProcessors {
                 jobMetrics,
                 authCheckBehavior))
         .withListener(
-            new JobTimeoutCheckSchedulerScheduler(
+            new JobTimeoutCheckerScheduler(
                 scheduledTaskStateFactory.get().getJobState(),
                 config.getJobsTimeoutCheckerPollingInterval(),
                 config.getJobsTimeoutCheckerBatchLimit(),
