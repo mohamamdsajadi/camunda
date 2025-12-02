@@ -1744,6 +1744,10 @@ final class JsonSerializableToJsonTest {
                       new ProcessInstanceModificationMoveInstruction()
                           .setSourceElementId(variableInstructionElementId)
                           .setTargetElementId(elementIdToActivate)
+                          .addVariableInstruction(
+                              new ProcessInstanceModificationVariableInstruction()
+                                  .setVariables(VARIABLES_MSGPACK)
+                                  .setElementId(variableInstructionElementId))
                           .setAncestorScopeKey(ancestorScopeKey)
                           .setUseSourceParentKeyAsAncestorScope(true))
                   .addActivateInstruction(
@@ -1766,6 +1770,12 @@ final class JsonSerializableToJsonTest {
                   "moveInstructions": [{
                     "sourceElementId": "sub-process",
                     "targetElementId": "activity",
+                    "variableInstructions": [{
+                      "elementId": "sub-process",
+                      "variables": {
+                        "foo": "bar"
+                      }
+                    }],
                     "ancestorScopeKey": 3,
                     "useSourceParentKeyAsAncestorScope": true
                   }],
@@ -3624,6 +3634,10 @@ final class JsonSerializableToJsonTest {
                                 new ProcessInstanceModificationMoveInstruction()
                                     .setSourceElementId("sourceTask")
                                     .setTargetElementId("targetTask")
+                                    .addVariableInstruction(
+                                        new ProcessInstanceModificationVariableInstruction()
+                                            .setVariables(VARIABLES_MSGPACK)
+                                            .setElementId("sub-process"))
                                     .setAncestorScopeKey(55555L)
                                     .setUseSourceParentKeyAsAncestorScope(true)))
                     .setAuthentication(
@@ -3676,12 +3690,18 @@ final class JsonSerializableToJsonTest {
                        {
                          "targetElementId": "targetTask",
                          "sourceElementId": "sourceTask",
+                         "variableInstructions": [{
+                           "elementId": "sub-process",
+                           "variables": {
+                             "foo": "bar"
+                           }
+                         }],
                          "ancestorScopeKey": 55555,
                          "useSourceParentKeyAsAncestorScope": true
                        }
                      ],
                      "empty": false,
-                     "encodedLength": 130
+                     "encodedLength": 196
                    },
                    "authenticationBuffer": {
                      "expandable": false
