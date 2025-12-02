@@ -30,6 +30,7 @@ import io.camunda.zeebe.protocol.impl.record.value.decision.DecisionEvaluationRe
 import io.camunda.zeebe.protocol.impl.record.value.deployment.DeploymentRecord;
 import io.camunda.zeebe.protocol.impl.record.value.deployment.ResourceRecord;
 import io.camunda.zeebe.protocol.impl.record.value.distribution.CommandDistributionRecord;
+import io.camunda.zeebe.protocol.impl.record.value.globallisteners.GlobalListenersRecord;
 import io.camunda.zeebe.protocol.impl.record.value.group.GroupRecord;
 import io.camunda.zeebe.protocol.impl.record.value.history.HistoryDeletionRecord;
 import io.camunda.zeebe.protocol.impl.record.value.incident.IncidentRecord;
@@ -105,6 +106,7 @@ public class CommandApiRequestReader implements RequestReader {
     RECORDS_BY_TYPE.put(ValueType.HISTORY_DELETION, HistoryDeletionRecord::new);
     RECORDS_BY_TYPE.put(ValueType.CONDITIONAL_SUBSCRIPTION, ConditionalSubscriptionRecord::new);
     RECORDS_BY_TYPE.put(ValueType.CONDITIONAL_EVALUATION, ConditionalEvaluationRecord::new);
+    RECORDS_BY_TYPE.put(ValueType.GLOBAL_LISTENERS, GlobalListenersRecord::new);
   }
 
   private UnifiedRecordValue value;
