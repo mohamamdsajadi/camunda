@@ -9,6 +9,7 @@ package io.camunda.zeebe.test;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.camunda.zeebe.test.VersionCompatibilityMatrix.GithubAPI.Ref;
 import io.camunda.zeebe.util.SemanticVersion;
 import io.camunda.zeebe.util.StreamUtil;
 import io.camunda.zeebe.util.VersionUtil;
@@ -26,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SequencedCollection;
@@ -49,7 +51,10 @@ final class VersionCompatibilityMatrix {
   private final VersionProvider versionProvider;
 
   public VersionCompatibilityMatrix() {
-    versionProvider = new CachedVersionProvider(new GithubVersionProvider());
+    final GithubAPI api = new GithubAPI();
+    versionProvider =
+        new CachedVersionProvider(
+            new AdvancedGithubVersionProvider(new GithubVersionProvider(api), api));
   }
 
   public VersionCompatibilityMatrix(final VersionProvider versionProvider) {
@@ -90,6 +95,7 @@ final class VersionCompatibilityMatrix {
   public Stream<Arguments> fromPreviousPatchesToCurrent() {
     final var current = VersionUtil.getSemanticVersion().orElseThrow();
     return discoverVersions()
+        .map(VersionInfo::version)
         .filter(version -> version.compareTo(current) < 0)
         .filter(version -> current.minor() - version.minor() <= 1)
         .map(version -> Arguments.of(version.toString(), "CURRENT"));
@@ -100,16 +106,18 @@ final class VersionCompatibilityMatrix {
 
     final var minAndMaxPatch =
         discoverVersions()
+            .map(VersionInfo::version)
             .filter(version -> version.compareTo(current) < 0)
             .filter(version -> current.minor() - version.minor() == 1)
             .collect(StreamUtil.minMax(Comparator.comparing(SemanticVersion::patch)));
+
     return Stream.of(
         Arguments.of(minAndMaxPatch.min().toString(), "CURRENT"),
         Arguments.of(minAndMaxPatch.max().toString(), "CURRENT"));
   }
 
   public Stream<Arguments> full() {
-    final var versionInfos = discoverReleasedVersions().sorted().toList();
+    final var versionInfos = discoverVersions().sorted().toList();
     final var combinations =
         versionInfos.stream()
             .filter(info -> info.version().minor() > 0)
@@ -173,11 +181,7 @@ final class VersionCompatibilityMatrix {
    *     href="https://docs.github.com/en/rest/git/refs?apiVersion=2022-11-28#list-matching-references--parameters">GitHub
    *     API</a>
    */
-  public Stream<SemanticVersion> discoverVersions() {
-    return discoverReleasedVersions().map(VersionInfo::version);
-  }
-
-  public Stream<VersionInfo> discoverReleasedVersions() {
+  public Stream<VersionInfo> discoverVersions() {
     return versionProvider.discoverVersions();
   }
 
@@ -256,48 +260,86 @@ final class VersionCompatibilityMatrix {
     record CachedVersionInfo(String version, boolean isReleased, boolean isLatest) {}
   }
 
-  static class GithubVersionProvider implements VersionProvider {
+  static class AdvancedGithubVersionProvider implements VersionProvider {
 
-    final Retry retry =
-        Retry.of(
-            "github-api",
-            RetryConfig.custom()
-                .maxAttempts(10)
-                .intervalFunction(IntervalFunction.ofExponentialBackoff())
-                .build());
+    private final VersionProvider delegate;
+    private final GithubAPI api;
+
+    public AdvancedGithubVersionProvider(final VersionProvider delegate, final GithubAPI api) {
+      this.delegate = delegate;
+      this.api = api;
+    }
 
     @Override
     public Stream<VersionInfo> discoverVersions() {
-      final var allVersions =
-          fetchTags()
-              .map(Ref::toSemanticVersion)
-              .filter(Objects::nonNull) // Filter out null versions
-              .filter(version -> version.preRelease() == null) // Filter out pre-releases
-              .map(version -> new VersionInfo(version, true, false))
-              .toList();
-
       // Mark latest versions, enrich with release status, and filter to released only
       final var releasedVersions =
-          enrichWithReleaseStatus(markLatestVersions(allVersions)).stream()
+          delegate
+              .discoverVersions()
+              .map(
+                  info -> {
+                    if (info.isLatest()) {
+                      final var isReleased = api.fetchRelease(info.version()).isPresent();
+                      return new VersionInfo(info.version(), isReleased, info.isLatest());
+                    } else {
+                      return info;
+                    }
+                  })
+              .peek(
+                  info -> {
+                    if (!info.isReleased()) {
+                      LOG.warn(
+                          "{} has no corresponding GitHub release yet. Using previous patch as latest for minor {}.",
+                          info.version(),
+                          info.version().minor());
+                    }
+                  })
               .filter(VersionInfo::isReleased)
               .toList();
 
       // Re-mark latest based on released versions only
-      return markLatestVersions(releasedVersions).stream();
+      return VersionInfo.updateLatest(releasedVersions).stream();
+    }
+  }
+
+  static class GithubVersionProvider implements VersionProvider {
+
+    private final GithubAPI api;
+
+    public GithubVersionProvider(final GithubAPI api) {
+      this.api = api;
     }
 
-    /**
-     * Marks the latest patch version for each minor version.
-     *
-     * @param versionInfos list of VersionInfo to analyze
-     * @return list of VersionInfo with isLatest=true for latest patch per minor, preserving other
-     *     fields
-     */
-    private List<VersionInfo> markLatestVersions(final List<VersionInfo> versionInfos) {
-      final var latestPerMinor =
-          findLatestPatchPerMinor(versionInfos.stream().map(VersionInfo::version).toList());
+    @Override
+    public Stream<VersionInfo> discoverVersions() {
+      final var versions =
+          api.fetchTags()
+              .map(Ref::toSemanticVersion)
+              .filter(Objects::nonNull) // Filter out null versions
+              .map(version -> new VersionInfo(version, !version.isPreRelease(), false))
+              .filter(VersionInfo::isReleased)
+              .toList();
 
-      return versionInfos.stream()
+      return VersionInfo.updateLatest(versions).stream();
+    }
+  }
+
+  record VersionInfo(SemanticVersion version, boolean isReleased, boolean isLatest)
+      implements Comparable<VersionInfo> {
+
+    static Map<Integer, VersionInfo> findLatestPatchPerMinor(final List<VersionInfo> versions) {
+      return versions.stream()
+          .collect(
+              Collectors.toMap(
+                  VersionInfo::minor,
+                  Function.identity(),
+                  BinaryOperator.maxBy(Comparator.comparing(VersionInfo::patch))));
+    }
+
+    static List<VersionInfo> updateLatest(final List<VersionInfo> versions) {
+      final var latestPerMinor = VersionInfo.findLatestPatchPerMinor(versions);
+
+      return versions.stream()
           .map(
               info -> {
                 final var isLatest =
@@ -307,52 +349,33 @@ final class VersionCompatibilityMatrix {
           .toList();
     }
 
-    /**
-     * Enriches VersionInfo with actual release status from GitHub API. Only checks versions marked
-     * as latest; non-latest versions are assumed to be released.
-     *
-     * @param versionInfos list to enrich
-     * @return list with updated isReleased flags
-     */
-    private List<VersionInfo> enrichWithReleaseStatus(final List<VersionInfo> versionInfos) {
-      return versionInfos.stream()
-          .map(
-              info -> {
-                if (!info.isLatest()) {
-                  // Not latest, assume released
-                  return info;
-                }
-
-                // Latest version, check if it's actually released
-                final var isReleased = fetchRelease(info.version()).isPresent();
-
-                if (!isReleased) {
-                  LOG.warn(
-                      "{} has no corresponding GitHub release yet. Using previous patch as latest for minor {}.",
-                      info.version(),
-                      info.version().minor());
-                }
-
-                return new VersionInfo(info.version(), isReleased, info.isLatest());
-              })
-          .toList();
+    public int minor() {
+      return version().minor();
     }
 
-    /**
-     * Finds the latest patch version for each minor version.
-     *
-     * @param versions list of versions to analyze
-     * @return map of minor version to the latest patch for that minor
-     */
-    private static java.util.Map<Integer, SemanticVersion> findLatestPatchPerMinor(
-        final List<SemanticVersion> versions) {
-      return versions.stream()
-          .collect(
-              Collectors.toMap(
-                  SemanticVersion::minor,
-                  Function.identity(),
-                  BinaryOperator.maxBy(Comparator.comparing(SemanticVersion::patch))));
+    public int patch() {
+      return version().patch();
     }
+
+    @Override
+    public int compareTo(final VersionInfo other) {
+      return version.compareTo(other.version);
+    }
+  }
+
+  interface VersionProvider {
+    Stream<VersionInfo> discoverVersions();
+  }
+
+  class GithubAPI {
+
+    final Retry retry =
+        Retry.of(
+            "github-api",
+            RetryConfig.custom()
+                .maxAttempts(10)
+                .intervalFunction(IntervalFunction.ofExponentialBackoff())
+                .build());
 
     private HttpRequest.Builder createAuthenticatedRequest(final URI endpoint) {
       final var builder = HttpRequest.newBuilder().GET().uri(endpoint);
@@ -433,17 +456,5 @@ final class VersionCompatibilityMatrix {
         return SemanticVersion.parse(tag_name).orElse(null);
       }
     }
-  }
-
-  record VersionInfo(SemanticVersion version, boolean isReleased, boolean isLatest)
-      implements Comparable<VersionInfo> {
-    @Override
-    public int compareTo(final VersionInfo other) {
-      return version.compareTo(other.version);
-    }
-  }
-
-  interface VersionProvider {
-    Stream<VersionInfo> discoverVersions();
   }
 }
