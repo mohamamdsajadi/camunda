@@ -106,11 +106,12 @@ test.describe('Process Instance History', () => {
                 assertion: async () => {
                     await expect(
                         operateProcessInstancePage.incidentsBanner,
-                    ).toBeVisible({ timeout: 30000 });
+                    ).toBeVisible({ timeout: 5000 });
                 },
                 onFailure: async () => {
                     await page.reload();
                 },
+                maxRetries: 12
             });
             await expect(operateProcessInstancePage.incidentsBanner).toContainText(
                 '1 Incident',
@@ -128,14 +129,14 @@ test.describe('Process Instance History', () => {
             await expect(operateProcessInstancePage.variableSpinner).toBeHidden();
         });
 
-        // await test.step('Retry incident', async () => {
-        //     await operateProcessInstancePage.clickIncidentsBanner();
-        //     const errorMessage =
-        //         "Expected result of the expression 'goUp < 0' to be 'BOOLEAN'...";
-        //     await operateProcessInstancePage.retryIncidentByErrorMessage(
-        //         errorMessage,
-        //     );
-        // });
+        await test.step('Retry incident', async () => {
+            await operateProcessInstancePage.clickIncidentsBanner();
+            const errorMessage =
+                "Expected result of the expression 'goUp < 0' to be 'BOOLEAN'...";
+            await operateProcessInstancePage.retryIncidentByErrorMessage(
+                errorMessage,
+            );
+        });
 
         // await test.step('Verify incident is resolved in Instance History', async () => {
         //   await waitForAssertion({
