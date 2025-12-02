@@ -7,6 +7,7 @@
  */
 
 import {isMoveModificationTarget} from 'modules/bpmn-js/utils/isMoveModificationTarget';
+import {hasMultiInstanceParent} from 'modules/bpmn-js/utils/isWithinMultiInstance';
 import {IS_ADD_TOKEN_WITH_ANCESTOR_KEY_SUPPORTED} from 'modules/feature-flags';
 import {useFlownodeInstancesStatistics} from 'modules/queries/flownodeInstancesStatistics/useFlownodeInstancesStatistics';
 import {useTotalRunningInstancesByFlowNode} from 'modules/queries/flownodeInstancesStatistics/useTotalRunningInstancesForFlowNode';
@@ -31,6 +32,7 @@ const useFlowNodes = () => {
         flowNodeState !== undefined &&
         (flowNodeState.active > 0 || flowNodeState.incidents > 0),
       isMoveModificationTarget: isMoveModificationTarget(flowNode),
+      hasMultiInstanceParent: hasMultiInstanceParent(flowNode),
       hasMultipleScopes: hasMultipleScopes(
         flowNode.$parent,
         totalRunningInstancesByFlowNode,
@@ -40,18 +42,38 @@ const useFlowNodes = () => {
 };
 
 const useAppendableFlowNodes = () => {
-  return useFlowNodes()
+  const flowNodes = useFlowNodes();
+  const {
+    state: {status, sourceFlowNodeIdForMoveOperation},
+    isMoveAllOperation,
+  } = modificationsStore;
+
+  const isSourceWithinMultiInstance = flowNodes.find(
+    ({id}) => id === sourceFlowNodeIdForMoveOperation,
+  )?.hasMultiInstanceParent;
+
+  return flowNodes
     .filter((flowNode) => {
       if (!flowNode.isMoveModificationTarget) {
         return false;
       }
 
-      if (flowNode.hasMultipleScopes) {
-        const {state, isMoveAllOperation} = modificationsStore;
-        return (
-          (state.status === 'moving-token' && !isMoveAllOperation) ||
-          IS_ADD_TOKEN_WITH_ANCESTOR_KEY_SUPPORTED
-        );
+      if (!flowNode.hasMultipleScopes) {
+        return !flowNode.hasMultiInstanceParent;
+      }
+
+      if (status !== 'moving-token') {
+        return IS_ADD_TOKEN_WITH_ANCESTOR_KEY_SUPPORTED;
+      }
+
+      // Moving all tokens inside a multi-instance is not allowed
+      if (isMoveAllOperation) {
+        return false;
+      }
+
+      // Moving from a single-instance into a multi-instance is not allowed
+      if (!isSourceWithinMultiInstance) {
+        return false;
       }
 
       return true;

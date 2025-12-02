@@ -15,4 +15,16 @@ const isWithinMultiInstance = (businessObject: BusinessObject) => {
   );
 };
 
-export {isWithinMultiInstance};
+const hasMultiInstanceParent = (businessObject?: BusinessObject): boolean => {
+  if (!businessObject) {
+    return false;
+  }
+
+  if (isWithinMultiInstance(businessObject)) {
+    return true;
+  }
+
+  return hasMultiInstanceParent(businessObject.$parent);
+};
+
+export {isWithinMultiInstance, hasMultiInstanceParent};
