@@ -5,6 +5,7 @@
 
 # testing
 /coverage
+TEST-unit.xml
 
 # production
 /build
