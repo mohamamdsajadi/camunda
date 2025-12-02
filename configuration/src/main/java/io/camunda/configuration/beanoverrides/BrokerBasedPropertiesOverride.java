@@ -9,7 +9,6 @@ package io.camunda.configuration.beanoverrides;
 
 import io.atomix.cluster.messaging.MessagingConfig.CompressionAlgorithm;
 import io.camunda.configuration.Azure;
-import io.camunda.configuration.Backup;
 import io.camunda.configuration.CommandApi;
 import io.camunda.configuration.Data;
 import io.camunda.configuration.DocumentBasedSecondaryStorageDatabase;
@@ -26,6 +25,7 @@ import io.camunda.configuration.Membership;
 import io.camunda.configuration.Metrics;
 import io.camunda.configuration.NodeIdProvider.Type;
 import io.camunda.configuration.PrimaryStorage;
+import io.camunda.configuration.PrimaryStorageBackup;
 import io.camunda.configuration.Processing;
 import io.camunda.configuration.Rdbms;
 import io.camunda.configuration.S3;
@@ -490,9 +490,10 @@ public class BrokerBasedPropertiesOverride {
   }
 
   private void populateFromBackup(final BrokerBasedProperties override) {
-    final Backup backup = unifiedConfiguration.getCamunda().getData().getBackup();
+    final PrimaryStorageBackup primaryStorageBackup =
+        unifiedConfiguration.getCamunda().getData().getPrimaryStorage().getBackup();
     final BackupCfg backupCfg = override.getData().getBackup();
-    backupCfg.setStore(BackupStoreType.valueOf(backup.getStore().name()));
+    backupCfg.setStore(BackupStoreType.valueOf(primaryStorageBackup.getStore().name()));
 
     populateFromS3(override);
     populateFromGcs(override);
@@ -503,7 +504,8 @@ public class BrokerBasedPropertiesOverride {
   }
 
   private void populateFromS3(final BrokerBasedProperties override) {
-    final S3 s3 = unifiedConfiguration.getCamunda().getData().getBackup().getS3();
+    final S3 s3 =
+        unifiedConfiguration.getCamunda().getData().getPrimaryStorage().getBackup().getS3();
     final S3BackupStoreConfig s3BackupStoreConfig = override.getData().getBackup().getS3();
     s3BackupStoreConfig.setBucketName(s3.getBucketName());
     s3BackupStoreConfig.setEndpoint(s3.getEndpoint());
@@ -571,7 +573,8 @@ public class BrokerBasedPropertiesOverride {
   }
 
   private void populateFromGcs(final BrokerBasedProperties override) {
-    final Gcs gcs = unifiedConfiguration.getCamunda().getData().getBackup().getGcs();
+    final Gcs gcs =
+        unifiedConfiguration.getCamunda().getData().getPrimaryStorage().getBackup().getGcs();
     final GcsBackupStoreConfig gcsBackupStoreConfig = override.getData().getBackup().getGcs();
     gcsBackupStoreConfig.setBucketName(gcs.getBucketName());
     gcsBackupStoreConfig.setBasePath(gcs.getBasePath());
@@ -582,7 +585,8 @@ public class BrokerBasedPropertiesOverride {
   }
 
   private void populateFromAzure(final BrokerBasedProperties override) {
-    final Azure azure = unifiedConfiguration.getCamunda().getData().getBackup().getAzure();
+    final Azure azure =
+        unifiedConfiguration.getCamunda().getData().getPrimaryStorage().getBackup().getAzure();
     final AzureBackupStoreConfig azureBackupStoreConfig = override.getData().getBackup().getAzure();
     azureBackupStoreConfig.setEndpoint(azure.getEndpoint());
     azureBackupStoreConfig.setAccountName(azure.getAccountName());
@@ -597,7 +601,13 @@ public class BrokerBasedPropertiesOverride {
 
   private void populateFromSasToken(final BrokerBasedProperties override) {
     final SasToken sasToken =
-        unifiedConfiguration.getCamunda().getData().getBackup().getAzure().getSasToken();
+        unifiedConfiguration
+            .getCamunda()
+            .getData()
+            .getPrimaryStorage()
+            .getBackup()
+            .getAzure()
+            .getSasToken();
     final SasTokenConfig sasTokenConfig = override.getData().getBackup().getAzure().getSasToken();
 
     if (sasToken != null) {
@@ -613,7 +623,7 @@ public class BrokerBasedPropertiesOverride {
 
   private void populateFromFilesystem(final BrokerBasedProperties override) {
     final Filesystem filesystem =
-        unifiedConfiguration.getCamunda().getData().getBackup().getFilesystem();
+        unifiedConfiguration.getCamunda().getData().getPrimaryStorage().getBackup().getFilesystem();
     final FilesystemBackupStoreConfig filesystemBackupStoreConfig =
         override.getData().getBackup().getFilesystem();
     filesystemBackupStoreConfig.setBasePath(filesystem.getBasePath());
