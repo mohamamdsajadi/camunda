@@ -16,10 +16,8 @@ import {notificationsStore} from 'modules/stores/notifications';
 import {handleOperationError as handleOperationErrorUtil} from 'modules/utils/notifications';
 import {tracking} from 'modules/tracking';
 import {Locations} from 'modules/Routes';
-import {
-  useHasActiveOperationItems,
-  BATCH_OPERATION_ITEMS_ACTIVE_QUERY_KEY,
-} from 'modules/queries/batch-operations/useHasActiveOperationItems';
+import {useHasActiveOperationItems} from 'modules/queries/batch-operations/useHasActiveOperationItems';
+import {queryKeys} from 'modules/queries/queryKeys';
 import {useCancelProcessInstance} from 'modules/mutations/processInstance/useCancelProcessInstance';
 import {useResolveProcessInstanceIncidents} from 'modules/mutations/processInstance/useResolveProcessInstanceIncidents';
 import {operationsStore} from 'modules/stores/operations';
@@ -72,7 +70,7 @@ const ProcessInstanceOperations: React.FC<Props> = ({processInstance}) => {
 
   const invalidateQueries = () => {
     queryClient.invalidateQueries({
-      queryKey: [BATCH_OPERATION_ITEMS_ACTIVE_QUERY_KEY],
+      queryKey: queryKeys.batchOperations.hasActiveOperationItems(),
     });
   };
 

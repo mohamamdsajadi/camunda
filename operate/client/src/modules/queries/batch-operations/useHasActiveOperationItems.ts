@@ -9,14 +9,14 @@
 import {useQuery} from '@tanstack/react-query';
 import {useProcessInstancePageParams} from 'App/ProcessInstance/useProcessInstancePageParams';
 import {queryBatchOperationItems} from 'modules/api/v2/batchOperations/queryBatchOperationItems';
-
-const BATCH_OPERATION_ITEMS_ACTIVE_QUERY_KEY = 'batchOperationItemsActive';
+import {queryKeys} from 'modules/queries/queryKeys';
 
 const useHasActiveOperationItems = () => {
   const {processInstanceId} = useProcessInstancePageParams();
 
   return useQuery({
-    queryKey: [BATCH_OPERATION_ITEMS_ACTIVE_QUERY_KEY, processInstanceId],
+    queryKey:
+      queryKeys.batchOperations.hasActiveOperationItems(processInstanceId),
     queryFn: async () => {
       if (!processInstanceId) {
         return false;
@@ -43,4 +43,4 @@ const useHasActiveOperationItems = () => {
   });
 };
 
-export {useHasActiveOperationItems, BATCH_OPERATION_ITEMS_ACTIVE_QUERY_KEY};
+export {useHasActiveOperationItems};

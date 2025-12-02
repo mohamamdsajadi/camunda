@@ -144,6 +144,10 @@ const queryKeys = {
   },
   batchOperations: {
     get: (batchOperationKey: string) => ['batchOperation', batchOperationKey],
+    hasActiveOperationItems: (processInstanceKey?: string) => [
+      'batchOperationItemsActive',
+      processInstanceKey,
+    ],
   },
 };
 
