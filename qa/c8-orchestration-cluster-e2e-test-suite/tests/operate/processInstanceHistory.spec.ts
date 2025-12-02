@@ -59,6 +59,7 @@ test.describe('Process Instance History', () => {
         operateFiltersPanelPage,
         operateProcessInstancePage,
     }) => {
+        test.slow();
         const incidentProcessInstanceKey =
             incidentProcessInstance.processInstanceKey;
 
@@ -95,18 +96,31 @@ test.describe('Process Instance History', () => {
             });
 
             await operateFiltersPanelPage.selectVersion('1');
-            await operateProcessesPage.clickProcessInstanceLink();
-            const key = await operateProcessInstancePage.getProcessInstanceKey();
-            expect(key).toContain(`${incidentProcessInstanceKey}`);
+        });
+
+        await test.step('Wait for incident to appear', async () => {
+            await operateFiltersPanelPage.clickActiveInstancesCheckbox();
+            await waitForAssertion({
+                assertion: async () => {
+                    await expect(page.getByText('1 result')).toBeVisible();
+                },
+                onFailure: async () => {
+                    await page.reload();
+                },
+                maxRetries: 60
+            });
         });
 
         await test.step('Verify Instance History Tab has incidents', async () => {
+            await operateProcessesPage.clickProcessInstanceLink();
+            const key = await operateProcessInstancePage.getProcessInstanceKey();
+            expect(key).toContain(`${incidentProcessInstanceKey}`);
             await expect(operateProcessInstancePage.instanceHistory).toBeVisible();
             await waitForAssertion({
                 assertion: async () => {
                     await expect(
                         operateProcessInstancePage.incidentsBanner,
-                    ).toBeVisible({ timeout: 5000 });
+                    ).toBeVisible();
                 },
                 onFailure: async () => {
                     await page.reload();
@@ -131,33 +145,33 @@ test.describe('Process Instance History', () => {
 
         await test.step('Retry incident', async () => {
             await operateProcessInstancePage.clickIncidentsBanner();
-            const errorMessage =
-                "Expected result of the expression 'goUp < 0' to be 'BOOLEAN'...";
+            const errorMessage = "goUp"
+            //    "Expected result of the expression 'goUp < 0' to be 'BOOLEAN'...";
             await operateProcessInstancePage.retryIncidentByErrorMessage(
                 errorMessage,
             );
         });
 
-        // await test.step('Verify incident is resolved in Instance History', async () => {
-        //   await waitForAssertion({
-        //     assertion: async () => {
-        //       await expect(operateProcessInstancePage.incidentsBanner).toBeHidden();
-        //     },
-        //     onFailure: async () => {
-        //       await page.reload();
-        //     },
-        //   });
-        //   await waitForAssertion({
-        //     assertion: async () => {
-        //       const incidentIconsCountAfterResolution =
-        //         await operateProcessInstancePage.getAllIncidentIconsAmountInHistory();
-        //       expect(incidentIconsCountAfterResolution).toBe(0);
-        //     },
-        //     onFailure: async () => {
-        //       await page.reload();
-        //     },
-        //   });
-        // });
+        await test.step('Verify incident is resolved in Instance History', async () => {
+            await waitForAssertion({
+                assertion: async () => {
+                    await expect(operateProcessInstancePage.incidentsBanner).toBeHidden();
+                },
+                onFailure: async () => {
+                    await page.reload();
+                },
+            });
+            await waitForAssertion({
+                assertion: async () => {
+                    const incidentIconsCountAfterResolution =
+                        await operateProcessInstancePage.getAllIncidentIconsAmountInHistory();
+                    expect(incidentIconsCountAfterResolution).toBe(0);
+                },
+                onFailure: async () => {
+                    await page.reload();
+                },
+            });
+        });
 
     });
 

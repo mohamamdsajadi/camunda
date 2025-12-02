@@ -245,8 +245,8 @@ class OperateProcessInstancePage {
 
   async retryIncidentByErrorMessage(errorMessage: string) {
     const incidentRow = await this.getIncidentRowByErrorMessage(errorMessage);
-    console.log(incidentRow.getByTestId('cell-flowNodeName').allInnerTexts());
-    const retryButton = incidentRow.getByText('Retry Incident');
+    console.log(await incidentRow.getByTestId('cell-flowNodeName').allInnerTexts());
+    const retryButton = incidentRow.getByTestId('retry-operation');
     await retryButton.click();
   }
 
