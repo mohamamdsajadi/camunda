@@ -28,6 +28,7 @@ import io.camunda.client.api.response.Process;
 import io.camunda.client.api.response.ProcessInstanceEvent;
 import io.camunda.client.api.search.enums.ProcessInstanceState;
 import io.camunda.client.api.search.response.ProcessInstance;
+import io.camunda.client.api.search.response.SearchResponse;
 import io.camunda.client.api.worker.JobWorker;
 import io.camunda.qa.util.multidb.MultiDbTest;
 import java.time.temporal.ChronoUnit;
@@ -39,6 +40,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -53,6 +55,7 @@ public class ProcessInstanceSearchTest {
   public static final int INCIDENT_ERROR_HASH_CODE_V2 = 17551445;
   static final List<Process> DEPLOYED_PROCESSES = new ArrayList<>();
   static final List<ProcessInstanceEvent> PROCESS_INSTANCES = new ArrayList<>();
+  static List<Long> PROCESS_INSTANCE_KEYS = new ArrayList<>();
   private static long processInstanceWithIncidentKey;
   private static CamundaClient camundaClient;
 
@@ -93,12 +96,15 @@ public class ProcessInstanceSearchTest {
 
     waitForProcessInstancesToStart(camundaClient, 8);
     waitUntilProcessInstanceHasIncidents(camundaClient, 2);
+
+    PROCESS_INSTANCES.forEach(pi -> PROCESS_INSTANCE_KEYS.add(pi.getProcessInstanceKey()));
   }
 
   @AfterAll
   static void afterAll() {
     DEPLOYED_PROCESSES.clear();
     PROCESS_INSTANCES.clear();
+    PROCESS_INSTANCE_KEYS.clear();
   }
 
   @Test
@@ -492,8 +498,10 @@ public class ProcessInstanceSearchTest {
             .send()
             .join();
 
+    final var instancesStartedByThisTest = getInstancesStartedByThisTest(result);
+
     // then
-    assertThat(result.items()).size().isEqualTo(5);
+    assertThat(instancesStartedByThisTest).size().isEqualTo(5);
   }
 
   @Test
@@ -509,9 +517,18 @@ public class ProcessInstanceSearchTest {
             .join();
 
     // then
-    assertThat(result.items().size()).isEqualTo(3);
-    assertThat(result.items()).filteredOn(pi -> pi.getEndDate() == null).hasSize(3);
-    assertThat(result.items()).filteredOn(pi -> !pi.getHasIncident()).hasSize(3);
+    final var instancesStartedByThisTest = getInstancesStartedByThisTest(result);
+
+    assertThat(instancesStartedByThisTest.size()).isEqualTo(3);
+    assertThat(instancesStartedByThisTest).filteredOn(pi -> pi.getEndDate() == null).hasSize(3);
+    assertThat(instancesStartedByThisTest).filteredOn(pi -> !pi.getHasIncident()).hasSize(3);
+  }
+
+  private static @NotNull List<ProcessInstance> getInstancesStartedByThisTest(
+      final SearchResponse<ProcessInstance> result) {
+    return result.items().stream()
+        .filter(instance -> PROCESS_INSTANCE_KEYS.contains(instance.getProcessInstanceKey()))
+        .toList();
   }
 
   @Test
@@ -538,9 +555,14 @@ public class ProcessInstanceSearchTest {
             .send()
             .join();
 
+    final var instancesStartedByThisTest = getInstancesStartedByThisTest(result);
+
     // then
-    assertThat(result.items().size()).isEqualTo(3);
-    assertThat(result.items().stream().map(ProcessInstance::getProcessDefinitionId).toList())
+    assertThat(instancesStartedByThisTest.size()).isEqualTo(3);
+    assertThat(
+            instancesStartedByThisTest.stream()
+                .map(ProcessInstance::getProcessDefinitionId)
+                .toList())
         .containsExactlyInAnyOrder("service_tasks_v1", "service_tasks_v1", "incident_process_v1");
   }
 
@@ -557,9 +579,14 @@ public class ProcessInstanceSearchTest {
             .send()
             .join();
 
+    final var instancesStartedByThisTest = getInstancesStartedByThisTest(result);
+
     // then
-    assertThat(result.items().size()).isEqualTo(2);
-    assertThat(result.items().stream().map(ProcessInstance::getProcessDefinitionId).toList())
+    assertThat(instancesStartedByThisTest.size()).isEqualTo(2);
+    assertThat(
+            instancesStartedByThisTest.stream()
+                .map(ProcessInstance::getProcessDefinitionId)
+                .toList())
         .containsExactlyInAnyOrder("service_tasks_v1", "service_tasks_v1");
   }
 
@@ -597,10 +624,14 @@ public class ProcessInstanceSearchTest {
             .send()
             .join();
 
+    final var instancesStartedByThisTest = getInstancesStartedByThisTest(result);
+
     // then
-    assertThat(result.items().size()).isEqualTo(5);
-    assertThat(result.items()).filteredOn(pi -> "ACTIVE".equals(pi.getState().name())).hasSize(5);
-    assertThat(result.items()).filteredOn(ProcessInstance::getHasIncident).hasSize(2);
+    assertThat(instancesStartedByThisTest.size()).isEqualTo(5);
+    assertThat(instancesStartedByThisTest)
+        .filteredOn(pi -> "ACTIVE".equals(pi.getState().name()))
+        .hasSize(5);
+    assertThat(instancesStartedByThisTest).filteredOn(ProcessInstance::getHasIncident).hasSize(2);
   }
 
   @Test
@@ -635,9 +666,12 @@ public class ProcessInstanceSearchTest {
                             f4 -> f4.state(ACTIVE))))
             .send()
             .join();
+
+    final var instancesStartedByThisTest = getInstancesStartedByThisTest(result);
+
     // then
-    assertThat(result.items().size()).isEqualTo(5);
-    assertThat(result.items()).allMatch(pi -> pi.getState().name().equals("ACTIVE"));
+    assertThat(instancesStartedByThisTest.size()).isEqualTo(5);
+    assertThat(instancesStartedByThisTest).allMatch(pi -> pi.getState().name().equals("ACTIVE"));
   }
 
   @Test
@@ -667,9 +701,14 @@ public class ProcessInstanceSearchTest {
             .send()
             .join();
 
+    final var instancesStartedByThisTest = getInstancesStartedByThisTest(result);
+
     // then
-    assertThat(result.items().size()).isEqualTo(5);
-    assertThat(result.items().stream().map(ProcessInstance::getProcessDefinitionId).toList())
+    assertThat(instancesStartedByThisTest.size()).isEqualTo(5);
+    assertThat(
+            instancesStartedByThisTest.stream()
+                .map(ProcessInstance::getProcessDefinitionId)
+                .toList())
         .containsExactlyInAnyOrder(
             "service_tasks_v1",
             "service_tasks_v1",
@@ -726,9 +765,14 @@ public class ProcessInstanceSearchTest {
             .send()
             .join();
 
+    final var instancesStartedByThisTest = getInstancesStartedByThisTest(result);
+
     // then
-    assertThat(result.items().size()).isEqualTo(2);
-    assertThat(result.items().stream().map(ProcessInstance::getProcessDefinitionId).toList())
+    assertThat(instancesStartedByThisTest.size()).isEqualTo(2);
+    assertThat(
+            instancesStartedByThisTest.stream()
+                .map(ProcessInstance::getProcessDefinitionId)
+                .toList())
         .containsExactlyInAnyOrder("incident_process_v1", "incident_process_v2");
   }
 
