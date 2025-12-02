@@ -45,7 +45,7 @@ The `CachedVersionProvider`:
 
 The cache file is stored at: `.cache/camunda-versions.json`
 
-This file contains a JSON array of version strings discovered from GitHub tags.
+This file contains a JSON array of version metadata objects (version, isReleased, isLatest) discovered from GitHub tags.
 
 ## Cache Behavior
 
@@ -143,7 +143,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: version-cache
-          path: .cache/zeebe-versions.json
+          path: .cache/camunda-versions.json
 
   test:
     needs: prepare-versions
@@ -166,13 +166,13 @@ jobs:
 ### View Cached Versions
 
 ```bash
-cat .cache/zeebe-versions.json | jq .
+cat .cache/camunda-versions.json | jq .
 ```
 
 ### Force Cache Refresh
 
 ```bash
-rm -f .cache/zeebe-versions.json
+rm -f .cache/camunda-versions.json
 ./mvnw test -pl zeebe/qa/update-tests
 ```
 
