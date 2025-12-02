@@ -148,9 +148,10 @@ public final class UserTaskRecord extends UnifiedRecordValue implements UserTask
   private final IntegerProperty priorityProp = new IntegerProperty(PRIORITY, 50);
   private final StringProperty deniedReasonProp = new StringProperty("deniedReason", EMPTY_STRING);
   private final ArrayProperty<StringValue> tagsProp = new ArrayProperty<>("tags", StringValue::new);
+  private final LongProperty listenersConfigKeyProp = new LongProperty("listenersConfigKey", -1L);
 
   public UserTaskRecord() {
-    super(23);
+    super(24);
     declareProperty(userTaskKeyProp)
         .declareProperty(assigneeProp)
         .declareProperty(candidateGroupsListProp)
@@ -173,7 +174,8 @@ public final class UserTaskRecord extends UnifiedRecordValue implements UserTask
         .declareProperty(creationTimestampProp)
         .declareProperty(priorityProp)
         .declareProperty(deniedReasonProp)
-        .declareProperty(tagsProp);
+        .declareProperty(tagsProp)
+        .declareProperty(listenersConfigKeyProp);
   }
 
   /** Like {@link #wrap(UserTaskRecord)} but does not set the variables. */
@@ -201,6 +203,7 @@ public final class UserTaskRecord extends UnifiedRecordValue implements UserTask
     priorityProp.setValue(record.getPriority());
     deniedReasonProp.setValue(record.getDeniedReason());
     setTags(record.getTags());
+    listenersConfigKeyProp.setValue(record.getListenersConfigKey());
   }
 
   /**
@@ -545,6 +548,15 @@ public final class UserTaskRecord extends UnifiedRecordValue implements UserTask
 
   public UserTaskRecord setUserTaskKey(final long userTaskKey) {
     userTaskKeyProp.setValue(userTaskKey);
+    return this;
+  }
+
+  public long getListenersConfigKey() {
+    return listenersConfigKeyProp.getValue();
+  }
+
+  public UserTaskRecord setListenersConfigKey(final long versionKey) {
+    listenersConfigKeyProp.setValue(versionKey);
     return this;
   }
 
