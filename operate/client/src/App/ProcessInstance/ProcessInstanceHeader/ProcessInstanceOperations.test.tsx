@@ -14,7 +14,6 @@ import {getMockQueryClient} from 'modules/react-query/mockQueryClient';
 import {MemoryRouter} from 'react-router-dom';
 import {modificationsStore} from 'modules/stores/modifications';
 import {notificationsStore} from 'modules/stores/notifications';
-import {processInstancesStore} from 'modules/stores/processInstances';
 import {mockCancelProcessInstance} from 'modules/mocks/api/v2/processInstances/cancelProcessInstance';
 import {mockResolveProcessInstanceIncidents} from 'modules/mocks/api/v2/processInstances/resolveProcessInstanceIncidents';
 import {mockApplyOperation} from 'modules/mocks/api/processInstances/operations';
@@ -49,7 +48,6 @@ describe('ProcessInstanceOperations', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     modificationsStore.reset();
-    processInstancesStore.reset();
     mockFetchCallHierarchy().withSuccess([]);
   });
 

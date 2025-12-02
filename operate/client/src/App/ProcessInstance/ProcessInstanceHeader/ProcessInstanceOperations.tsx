@@ -16,15 +16,16 @@ import {notificationsStore} from 'modules/stores/notifications';
 import {handleOperationError as handleOperationErrorUtil} from 'modules/utils/notifications';
 import {tracking} from 'modules/tracking';
 import {Locations} from 'modules/Routes';
-import {PROCESS_INSTANCE_DEPRECATED_QUERY_KEY} from 'modules/queries/processInstance/deprecated/useProcessInstanceDeprecated';
-import {useHasActiveOperations} from 'modules/queries/operations/useHasActiveOperations';
+import {
+  useHasActiveOperationItems,
+  BATCH_OPERATION_ITEMS_ACTIVE_QUERY_KEY,
+} from 'modules/queries/batch-operations/useHasActiveOperationItems';
 import {useCancelProcessInstance} from 'modules/mutations/processInstance/useCancelProcessInstance';
 import {useResolveProcessInstanceIncidents} from 'modules/mutations/processInstance/useResolveProcessInstanceIncidents';
 import {operationsStore} from 'modules/stores/operations';
 import {type OperationEntityType} from 'modules/types/operate';
 import {ModificationHelperModal} from './ModificationHelperModal';
 import {getStateLocally} from 'modules/utils/localStorage';
-import {processInstancesStore} from 'modules/stores/processInstances';
 import type {OperationConfig} from 'modules/components/Operations/types';
 import {logger} from 'modules/logger';
 
@@ -40,7 +41,7 @@ const ProcessInstanceOperations: React.FC<Props> = ({processInstance}) => {
     setIsModificationModeHelperModalVisible,
   ] = useState(false);
 
-  const {data: hasActiveOperationLegacy} = useHasActiveOperations();
+  const {data: hasActiveOperationItems} = useHasActiveOperationItems();
 
   const {
     mutate: cancelProcessInstance,
@@ -71,7 +72,7 @@ const ProcessInstanceOperations: React.FC<Props> = ({processInstance}) => {
 
   const invalidateQueries = () => {
     queryClient.invalidateQueries({
-      queryKey: [PROCESS_INSTANCE_DEPRECATED_QUERY_KEY],
+      queryKey: [BATCH_OPERATION_ITEMS_ACTIVE_QUERY_KEY],
     });
   };
 
@@ -189,10 +190,7 @@ const ProcessInstanceOperations: React.FC<Props> = ({processInstance}) => {
   }
 
   const isLoading =
-    hasActiveOperationLegacy ||
-    processInstancesStore.processInstanceIdsWithActiveOperations.includes(
-      processInstance.processInstanceKey,
-    ) ||
+    hasActiveOperationItems ||
     isCancelProcessInstancePending ||
     isResolveIncidentsPending;
 

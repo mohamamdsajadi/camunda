@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="23" failures="0" errors="0" time="2.087585555">
+    <testsuite name="src/App/ProcessInstance/ProcessInstanceHeader/ProcessInstanceOperations.test.tsx" timestamp="2025-12-02T10:16:49.177Z" hostname="runnervmg1sw1" tests="8" failures="0" errors="0" skipped="0" time="0.551213796">
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/ProcessInstanceOperations.test.tsx" name="ProcessInstanceOperations &gt; should render operations for active instance with incident" time="0.146574816">
+        </testcase>
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/ProcessInstanceOperations.test.tsx" name="ProcessInstanceOperations &gt; should render operations for active instance without incident" time="0.022581247">
+        </testcase>
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/ProcessInstanceOperations.test.tsx" name="ProcessInstanceOperations &gt; should render delete operation for terminated instance" time="0.008398917">
+        </testcase>
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/ProcessInstanceOperations.test.tsx" name="ProcessInstanceOperations &gt; should hide operations when modification mode is enabled" time="0.006240997">
+        </testcase>
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/ProcessInstanceOperations.test.tsx" name="ProcessInstanceOperations &gt; should show notification on cancel error" time="0.194534155">
+        </testcase>
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/ProcessInstanceOperations.test.tsx" name="ProcessInstanceOperations &gt; should show notification on resolve incident error" time="0.059096989">
+        </testcase>
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/ProcessInstanceOperations.test.tsx" name="ProcessInstanceOperations &gt; should show notification on resolve incident permission error" time="0.052073671">
+        </testcase>
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/ProcessInstanceOperations.test.tsx" name="ProcessInstanceOperations &gt; should show notification on delete operation error" time="0.057383699">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/App/ProcessInstance/ProcessInstanceHeader/tests/index.test.tsx" timestamp="2025-12-02T10:16:49.180Z" hostname="runnervmg1sw1" tests="10" failures="0" errors="0" skipped="0" time="0.994993135">
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/tests/index.test.tsx" name="InstanceHeader &gt; should render process instance data" time="0.328670456">
+        </testcase>
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/tests/index.test.tsx" name="InstanceHeader &gt; should render &quot;View All&quot; link for call activity process" time="0.085492739">
+        </testcase>
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/tests/index.test.tsx" name="InstanceHeader &gt; should navigate to Instances Page and expand Filters Panel on &quot;View All&quot; click" time="0.094827785">
+        </testcase>
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/tests/index.test.tsx" name="InstanceHeader &gt; should render parent Process Instance Key" time="0.044497586">
+        </testcase>
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/tests/index.test.tsx" name="InstanceHeader &gt; should show spinner when instance has active operations" time="0.049355404">
+        </testcase>
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/tests/index.test.tsx" name="InstanceHeader &gt; should not show spinner when instance has no active operations" time="0.035414676">
+        </testcase>
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/tests/index.test.tsx" name="InstanceHeader &gt; should show operation buttons for running process instance when user has permission" time="0.062418042">
+        </testcase>
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/tests/index.test.tsx" name="InstanceHeader &gt; should show operation buttons for finished process instance when user has permission" time="0.037205095">
+        </testcase>
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/tests/index.test.tsx" name="InstanceHeader &gt; should redirect and show notification when &quot;Delete Instance&quot; is clicked" time="0.12071691">
+        </testcase>
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/tests/index.test.tsx" name="InstanceHeader &gt; should show spinner on process instance cancellation" time="0.131516701">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/App/ProcessInstance/ProcessInstanceHeader/tests/multiTenancy.test.tsx" timestamp="2025-12-02T10:16:49.182Z" hostname="runnervmg1sw1" tests="2" failures="0" errors="0" skipped="0" time="0.276972297">
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/tests/multiTenancy.test.tsx" name="InstanceHeader &gt; should render multi tenancy column and include tenant in version link" time="0.198856024">
+            <system-err>
+[MSW] Error: intercepted a request without a matching request handler:
+
+  • GET /api/process-instances/2251799813685294
+
+If you still wish to intercept this unhandled request, please create a request handler for it.
+Read more: https://mswjs.io/docs/http/intercepting-requests
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/tests/multiTenancy.test.tsx" name="InstanceHeader &gt; should hide multi tenancy column and exclude tenant from version link" time="0.072684808">
+            <system-err>
+[MSW] Error: intercepted a request without a matching request handler:
+
+  • GET /api/process-instances/2251799813685294
+
+If you still wish to intercept this unhandled request, please create a request handler for it.
+Read more: https://mswjs.io/docs/http/intercepting-requests
+
+            </system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/App/ProcessInstance/ProcessInstanceHeader/tests/versionTag.test.tsx" timestamp="2025-12-02T10:16:49.183Z" hostname="runnervmg1sw1" tests="3" failures="0" errors="0" skipped="0" time="0.264406327">
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/tests/versionTag.test.tsx" name="InstanceHeader &gt; should render version tag" time="0.17136068">
+            <system-err>
+[MSW] Error: intercepted a request without a matching request handler:
+
+  • GET /api/process-instances/2251799813685294
+
+If you still wish to intercept this unhandled request, please create a request handler for it.
+Read more: https://mswjs.io/docs/http/intercepting-requests
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/tests/versionTag.test.tsx" name="InstanceHeader &gt; should not render version tag" time="0.049478834">
+            <system-err>
+[MSW] Error: intercepted a request without a matching request handler:
+
+  • GET /api/process-instances/2251799813685294
+
+If you still wish to intercept this unhandled request, please create a request handler for it.
+Read more: https://mswjs.io/docs/http/intercepting-requests
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/App/ProcessInstance/ProcessInstanceHeader/tests/versionTag.test.tsx" name="InstanceHeader &gt; should not render version tag on error" time="0.039925771">
+            <system-err>
+[MSW] Error: intercepted a request without a matching request handler:
+
+  • GET /api/process-instances/2251799813685294
+
+If you still wish to intercept this unhandled request, please create a request handler for it.
+Read more: https://mswjs.io/docs/http/intercepting-requests
+
+            </system-err>
+        </testcase>
+    </testsuite>
+</testsuites>
