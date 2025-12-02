@@ -1,3 +1,11 @@
+/*
+ * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH under
+ * one or more contributor license agreements. See the NOTICE file distributed
+ * with this work for additional information regarding copyright ownership.
+ * Licensed under the Camunda License 1.0. You may not use this file
+ * except in compliance with the Camunda License 1.0.
+ */
+
 // NOTE: Many schema shapes are dynamic OpenAPI fragments; using `any` with selective lint disable for pragmatism.
 export interface OperationModel {
   operationId: string;
@@ -12,7 +20,7 @@ export interface OperationModel {
   parameters: ParameterModel[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rootOneOf?: any[]; // array of variant schemas if oneOf at root
-  discriminator?: { propertyName: string; mapping?: Record<string,string> };
+  discriminator?: {propertyName: string; mapping?: Record<string, string>};
   /** multipart/form-data schema if present (raw dereferenced) */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   multipartSchema?: any;

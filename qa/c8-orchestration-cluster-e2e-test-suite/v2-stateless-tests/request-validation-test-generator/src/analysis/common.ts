@@ -1,4 +1,12 @@
-import { OperationModel } from '../model/types.js';
+/*
+ * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH under
+ * one or more contributor license agreements. See the NOTICE file distributed
+ * with this work for additional information regarding copyright ownership.
+ * Licensed under the Camunda License 1.0. You may not use this file
+ * except in compliance with the Camunda License 1.0.
+ */
+
+import {OperationModel} from '../model/types.js';
 
 export function firstResourceSegment(path: string): string {
   // strip leading slash then split after /v1|/v2 if present
@@ -9,20 +17,29 @@ export function firstResourceSegment(path: string): string {
 }
 
 export function makeId(parts: string[]): string {
-  return parts.filter(Boolean).join('__').replace(/[^a-zA-Z0-9_]+/g, '_');
+  return parts
+    .filter(Boolean)
+    .join('__')
+    .replace(/[^a-zA-Z0-9_]+/g, '_');
 }
 
 export function genPlaceholder(schema: any): any {
   if (!schema) return 'x';
   if (schema.enum && schema.enum.length) return schema.enum[0];
   switch (schema.type) {
-    case 'string': return 'x';
+    case 'string':
+      return 'x';
     case 'integer':
-    case 'number': return 1;
-    case 'boolean': return true;
-    case 'array': return [];
-    case 'object': return {}; // shallow for now
-    default: return 'x';
+    case 'number':
+      return 1;
+    case 'boolean':
+      return true;
+    case 'array':
+      return [];
+    case 'object':
+      return {}; // shallow for now
+    default:
+      return 'x';
   }
 }
 

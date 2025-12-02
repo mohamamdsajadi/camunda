@@ -1,5 +1,13 @@
+/*
+ * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH under
+ * one or more contributor license agreements. See the NOTICE file distributed
+ * with this work for additional information regarding copyright ownership.
+ * Licensed under the Camunda License 1.0. You may not use this file
+ * except in compliance with the Camunda License 1.0.
+ */
+
 import SwaggerParser from '@apidevtools/swagger-parser';
-import { OperationModel, ParameterModel, SpecModel } from '../model/types.js';
+import {OperationModel, ParameterModel, SpecModel} from '../model/types.js';
 
 export async function loadSpec(file: string): Promise<SpecModel> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -13,22 +21,27 @@ export async function loadSpec(file: string): Promise<SpecModel> {
       const method = m.toUpperCase();
       if (!op || !op.operationId) continue;
       const params: ParameterModel[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const allParams = [...(op.parameters || []), ...((methods as any).parameters || [])];
+
+      const allParams = [
+        ...(op.parameters || []),
+        ...((methods as any).parameters || []),
+      ];
       for (const pDef of allParams) {
         params.push({
           name: pDef.name,
-            in: pDef.in,
+          in: pDef.in,
           required: !!pDef.required,
           schema: pDef.schema || undefined,
         });
       }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let requestBodySchema: any | undefined;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let requestBodySchema: any | undefined;
       let requiredProps: string[] | undefined;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let rootOneOf: any[] | undefined;
-      let discriminator: { propertyName: string; mapping?: Record<string,string> } | undefined;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let rootOneOf: any[] | undefined;
+      let discriminator:
+        | {propertyName: string; mapping?: Record<string, string>}
+        | undefined;
       let bodyRequired: boolean | undefined;
       let multipartSchema: any | undefined; // eslint-disable-line @typescript-eslint/no-explicit-any
       let multipartRequiredProps: string[] | undefined;
@@ -47,20 +60,32 @@ export async function loadSpec(file: string): Promise<SpecModel> {
         }
         if (multipart && multipart.schema) {
           multipartSchema = multipart.schema;
-          if (multipartSchema.type === 'object' && Array.isArray(multipartSchema.required)) {
+          if (
+            multipartSchema.type === 'object' &&
+            Array.isArray(multipartSchema.required)
+          ) {
             multipartRequiredProps = [...multipartSchema.required];
           }
         }
         if (requestBodySchema) {
-          if (requestBodySchema.type === 'object' && Array.isArray(requestBodySchema.required)) {
+          if (
+            requestBodySchema.type === 'object' &&
+            Array.isArray(requestBodySchema.required)
+          ) {
             requiredProps = [...requestBodySchema.required];
           }
           if (Array.isArray(requestBodySchema.oneOf)) {
             rootOneOf = requestBodySchema.oneOf;
           }
-          if (requestBodySchema.discriminator && requestBodySchema.discriminator.propertyName) {
+          if (
+            requestBodySchema.discriminator &&
+            requestBodySchema.discriminator.propertyName
+          ) {
             const d = requestBodySchema.discriminator;
-            discriminator = { propertyName: d.propertyName, mapping: d.mapping ? { ...d.mapping } : undefined };
+            discriminator = {
+              propertyName: d.propertyName,
+              mapping: d.mapping ? {...d.mapping} : undefined,
+            };
           }
         }
       }
@@ -81,5 +106,5 @@ export async function loadSpec(file: string): Promise<SpecModel> {
       });
     }
   }
-  return { operations };
+  return {operations};
 }

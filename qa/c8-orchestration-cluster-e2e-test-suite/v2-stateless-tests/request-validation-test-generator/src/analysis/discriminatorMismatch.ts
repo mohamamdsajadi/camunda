@@ -1,12 +1,26 @@
-import { OperationModel, ValidationScenario } from '../model/types.js';
-import { makeId } from './common.js';
+/*
+ * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH under
+ * one or more contributor license agreements. See the NOTICE file distributed
+ * with this work for additional information regarding copyright ownership.
+ * Licensed under the Camunda License 1.0. You may not use this file
+ * except in compliance with the Camunda License 1.0.
+ */
 
-interface Opts { onlyOperations?: Set<string>; }
+import {OperationModel, ValidationScenario} from '../model/types.js';
+import {makeId} from './common.js';
 
-export function generateDiscriminatorMismatch(ops: OperationModel[], opts: Opts): ValidationScenario[] {
+interface Opts {
+  onlyOperations?: Set<string>;
+}
+
+export function generateDiscriminatorMismatch(
+  ops: OperationModel[],
+  opts: Opts,
+): ValidationScenario[] {
   const out: ValidationScenario[] = [];
   for (const op of ops) {
-    if (opts.onlyOperations && !opts.onlyOperations.has(op.operationId)) continue;
+    if (opts.onlyOperations && !opts.onlyOperations.has(op.operationId))
+      continue;
     if (!op.requestBodySchema) continue;
     const d = op.discriminator;
     if (!d || !d.propertyName) continue;
@@ -14,11 +28,16 @@ export function generateDiscriminatorMismatch(ops: OperationModel[], opts: Opts)
     // baseline body: fill required of first object variant if oneOf present
     let base: any = {};
     if (Array.isArray(root.oneOf)) {
-      const firstObj = root.oneOf.find((v:any)=>v && v.type==='object');
+      const firstObj = root.oneOf.find((v: any) => v && v.type === 'object');
       if (firstObj && Array.isArray(firstObj.required) && firstObj.properties) {
-        for (const r of firstObj.required) base[r] = placeholder(firstObj.properties[r]);
+        for (const r of firstObj.required)
+          base[r] = placeholder(firstObj.properties[r]);
       }
-    } else if (root.type === 'object' && Array.isArray(root.required) && root.properties) {
+    } else if (
+      root.type === 'object' &&
+      Array.isArray(root.required) &&
+      root.properties
+    ) {
       for (const r of root.required) base[r] = placeholder(root.properties[r]);
     }
     // Insert discriminator value that does not map
@@ -44,13 +63,25 @@ function placeholder(schema: any): any {
   if (!schema) return 'x';
   if (schema.enum && schema.enum.length) return schema.enum[0];
   switch (schema.type) {
-    case 'string': return 'x';
+    case 'string':
+      return 'x';
     case 'integer':
-    case 'number': return 1;
-    case 'boolean': return true;
-    case 'array': return [];
-    case 'object': return {}; // shallow
-    default: return 'x';
+    case 'number':
+      return 1;
+    case 'boolean':
+      return true;
+    case 'array':
+      return [];
+    case 'object':
+      return {}; // shallow
+    default:
+      return 'x';
   }
 }
-function buildParams(path: string): Record<string,string> | undefined { const m=path.match(/\{([^}]+)}/g); if(!m) return undefined; const params: Record<string,string>={}; for(const token of m) params[token.slice(1,-1)]='x'; return params; }
+function buildParams(path: string): Record<string, string> | undefined {
+  const m = path.match(/\{([^}]+)}/g);
+  if (!m) return undefined;
+  const params: Record<string, string> = {};
+  for (const token of m) params[token.slice(1, -1)] = 'x';
+  return params;
+}

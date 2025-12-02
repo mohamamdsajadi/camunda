@@ -1,5 +1,13 @@
-import { WalkNode, buildWalk } from './walker.js';
-import { OperationModel } from '../model/types.js';
+/*
+ * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH under
+ * one or more contributor license agreements. See the NOTICE file distributed
+ * with this work for additional information regarding copyright ownership.
+ * Licensed under the Camunda License 1.0. You may not use this file
+ * except in compliance with the Camunda License 1.0.
+ */
+
+import {WalkNode, buildWalk} from './walker.js';
+import {OperationModel} from '../model/types.js';
 
 export function buildBaselineBody(op: OperationModel): any {
   const walk = buildWalk(op);
@@ -22,7 +30,18 @@ export function buildBaselineBody(op: OperationModel): any {
             if (node.required && node.required.includes(k)) continue;
             const raw: any = (child as any).raw;
             if (raw) {
-              const interesting = !!(raw.enum?.length || raw.format || raw.pattern || raw.minimum !== undefined || raw.maximum !== undefined || raw.multipleOf !== undefined || raw.minLength !== undefined || raw.maxLength !== undefined || raw.uniqueItems || raw.additionalProperties === false);
+              const interesting = !!(
+                raw.enum?.length ||
+                raw.format ||
+                raw.pattern ||
+                raw.minimum !== undefined ||
+                raw.maximum !== undefined ||
+                raw.multipleOf !== undefined ||
+                raw.minLength !== undefined ||
+                raw.maxLength !== undefined ||
+                raw.uniqueItems ||
+                raw.additionalProperties === false
+              );
               if (interesting) {
                 obj[k] = synth(child);
               }
@@ -36,10 +55,14 @@ export function buildBaselineBody(op: OperationModel): any {
         return [];
       }
       case 'integer':
-      case 'number': return 1;
-      case 'boolean': return true;
-      case 'string': return node.enum && node.enum.length ? node.enum[0] : 'x';
-      default: return null;
+      case 'number':
+        return 1;
+      case 'boolean':
+        return true;
+      case 'string':
+        return node.enum && node.enum.length ? node.enum[0] : 'x';
+      default:
+        return null;
     }
   }
   return synth(walk.root);
