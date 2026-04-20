@@ -16,6 +16,7 @@ import 'dmn-js/dist/assets/dmn-font/css/dmn.css';
 import 'bpmn-js/dist/assets/bpmn-js.css';
 import {tracking} from 'modules/tracking';
 import {createRoot} from 'react-dom/client';
+import {initI18next} from 'modules/i18n/i18next';
 
 function enableMockingForDevEnv(): Promise<void> {
   return new Promise((resolve) => {
@@ -37,6 +38,7 @@ Promise.all([
   tracking.loadAnalyticsToWillingUsers(),
   enableMockingForDevEnv(),
 ]).then(() => {
+  initI18next();
   const rootElement = document.getElementById('root');
   if (rootElement !== null) {
     const root = createRoot(rootElement);

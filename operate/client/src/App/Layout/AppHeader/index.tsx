@@ -9,6 +9,12 @@
 import {useEffect, useState} from 'react';
 import {observer} from 'mobx-react-lite';
 import {Link} from 'react-router-dom';
+import {
+  Dropdown,
+  Layer,
+  type OnChangeData,
+  SwitcherDivider,
+} from '@carbon/react';
 import {ArrowRight} from '@carbon/react/icons';
 import {C3Navigation} from '@camunda/camunda-composite-components';
 import {Locations, Paths} from 'modules/Routes';
@@ -21,12 +27,19 @@ import {useCurrentUser} from 'modules/queries/useCurrentUser';
 import {isForbidden} from 'modules/auth/isForbidden';
 import {getClientConfig} from 'modules/utils/getClientConfig';
 import {notificationsStore} from 'modules/stores/notifications';
+import {
+  languageItems,
+  type SelectionOption,
+  useTranslation,
+  translate as t,
+} from 'modules/i18n';
+import styles from './styles.module.scss';
 
 function getInfoSidebarItems(isPaidPlan: boolean) {
   const BASE_INFO_SIDEBAR_ITEMS = [
     {
       key: 'docs',
-      label: 'Documentation',
+      label: t('headerSidebarDocumentationLink'),
       onClick: () => {
         tracking.track({
           eventName: 'info-bar',
@@ -38,7 +51,7 @@ function getInfoSidebarItems(isPaidPlan: boolean) {
     },
     {
       key: 'academy',
-      label: 'Camunda Academy',
+      label: t('headerSidebarCamundaAcademyLink'),
       onClick: () => {
         tracking.track({
           eventName: 'info-bar',
@@ -51,7 +64,7 @@ function getInfoSidebarItems(isPaidPlan: boolean) {
   ];
   const FEEDBACK_AND_SUPPORT_ITEM = {
     key: 'feedbackAndSupport',
-    label: 'Feedback and Support',
+    label: t('headerSidebarFeedbackAndSupportLink'),
     onClick: () => {
       tracking.track({
         eventName: 'info-bar',
@@ -63,7 +76,7 @@ function getInfoSidebarItems(isPaidPlan: boolean) {
   } as const;
   const COMMUNITY_FORUM_ITEM = {
     key: 'communityForum',
-    label: 'Community Forum',
+    label: t('headerSidebarCommunityForumLink'),
     onClick: () => {
       tracking.track({
         eventName: 'info-bar',
@@ -88,6 +101,7 @@ const NAVBAR_LG_BREAKPOINT = '(min-width: 66rem)';
 const LOGOUT_DELAY = 1000;
 
 const AppHeader: React.FC = observer(() => {
+  const {t} = useTranslation();
   const {data: currentUser} = useCurrentUser();
   const clientConfig = getClientConfig();
   const IS_SAAS = typeof clientConfig.organizationId === 'string';
@@ -124,8 +138,8 @@ const AppHeader: React.FC = observer(() => {
   const logoutWithNotification = async () => {
     notificationsStore.displayNotification({
       kind: 'info',
-      title: 'Log Out',
-      subtitle: 'You are being logged out...',
+      title: t('notificationLogOutTitle'),
+      subtitle: t('notificationLogOutSubtitle'),
       isDismissable: true,
     });
     return setTimeout(authenticationStore.handleLogout, LOGOUT_DELAY);
@@ -136,7 +150,7 @@ const AppHeader: React.FC = observer(() => {
       toggleAppbar={(isAppBarOpen) => setIsAppBarOpen(isAppBarOpen)}
       notificationSideBar={IS_SAAS ? {} : undefined}
       appBar={{
-        ariaLabel: 'App panel',
+        ariaLabel: t('headerAppBarLabel'),
         isOpen: isAppBarOpen,
         elementClicked: (app: string) => {
           tracking.track({
@@ -167,7 +181,7 @@ const AppHeader: React.FC = observer(() => {
           : [
               {
                 key: 'dashboard',
-                label: 'Dashboard',
+                label: t('headerNavItemDashboard'),
                 isCurrentPage: currentPage === 'dashboard',
                 routeProps: {
                   to: Paths.dashboard(),
@@ -182,7 +196,7 @@ const AppHeader: React.FC = observer(() => {
               },
               {
                 key: 'processes',
-                label: 'Processes',
+                label: t('headerNavItemProcesses'),
                 isCurrentPage:
                   currentPage === 'processes' ||
                   currentPage?.startsWith('process-details') === true,
@@ -200,7 +214,7 @@ const AppHeader: React.FC = observer(() => {
               },
               {
                 key: 'decisions',
-                label: 'Decisions',
+                label: t('headerNavItemDecisions'),
                 isCurrentPage:
                   currentPage === 'decisions' ||
                   currentPage === 'decision-details',
@@ -220,14 +234,14 @@ const AppHeader: React.FC = observer(() => {
                 ? [
                     {
                       key: 'operations',
-                      label: 'Operations',
+                      label: t('headerNavItemOperations'),
                       isCurrentPage:
                         currentPage === 'batch-operations' ||
                         currentPage === 'operations-log',
                       subElements: [
                         {
                           key: 'batch-operations',
-                          label: 'Batch operations',
+                          label: t('headerNavItemBatchOperations'),
                           isCurrentPage: currentPage === 'batch-operations',
                           routeProps: {
                             to: Paths.batchOperations(),
@@ -243,7 +257,7 @@ const AppHeader: React.FC = observer(() => {
                         },
                         {
                           key: 'operations-log',
-                          label: 'Operations log',
+                          label: t('headerNavItemOperationsLog'),
                           isCurrentPage: currentPage === 'operations-log',
                           routeProps: {
                             to: Paths.operationsLog(),
@@ -263,7 +277,7 @@ const AppHeader: React.FC = observer(() => {
                 : [
                     {
                       key: 'batch-operations',
-                      label: 'Batch operations',
+                      label: t('headerNavItemBatchOperations'),
                       isCurrentPage: currentPage === 'batch-operations',
                       routeProps: {
                         to: Paths.batchOperations(),
@@ -278,7 +292,7 @@ const AppHeader: React.FC = observer(() => {
                     },
                     {
                       key: 'operations-log',
-                      label: 'Operations log',
+                      label: t('headerNavItemOperationsLog'),
                       isCurrentPage: currentPage === 'operations-log',
                       routeProps: {
                         to: Paths.operationsLog(),
@@ -302,18 +316,18 @@ const AppHeader: React.FC = observer(() => {
       }}
       infoSideBar={{
         isOpen: false,
-        ariaLabel: 'Info',
+        ariaLabel: t('headerInfoLabel'),
         elements: getInfoSidebarItems(
           typeof currentUser?.salesPlanType === 'string' &&
             ['paid-cc', 'enterprise'].includes(currentUser.salesPlanType),
         ),
       }}
       userSideBar={{
-        ariaLabel: 'Settings',
+        ariaLabel: t('headerSettingsLabel'),
         version: import.meta.env.VITE_VERSION,
         customElements: {
           profile: {
-            label: 'Profile',
+            label: t('headerProfileLabel'),
             user: {
               name: currentUser?.displayName ?? '',
               email: currentUser?.email ?? '',
@@ -325,6 +339,7 @@ const AppHeader: React.FC = observer(() => {
               changeTheme(theme as 'system' | 'dark' | 'light');
             },
           },
+          customSection: <LanguageSelector />,
         },
         elements: [
           ...(window.Osano?.cm === undefined
@@ -332,7 +347,7 @@ const AppHeader: React.FC = observer(() => {
             : [
                 {
                   key: 'cookie',
-                  label: 'Cookie preferences',
+                  label: t('headerCookiePreferencesLabel'),
                   onClick: () => {
                     tracking.track({
                       eventName: 'user-side-bar',
@@ -347,7 +362,7 @@ const AppHeader: React.FC = observer(() => {
               ]),
           {
             key: 'terms',
-            label: 'Terms of use',
+            label: t('headerTermsOfUseLabel'),
             onClick: () => {
               tracking.track({
                 eventName: 'user-side-bar',
@@ -362,7 +377,7 @@ const AppHeader: React.FC = observer(() => {
           },
           {
             key: 'privacy',
-            label: 'Privacy policy',
+            label: t('headerPrivacyPolicyLabel'),
             onClick: () => {
               tracking.track({
                 eventName: 'user-side-bar',
@@ -374,7 +389,7 @@ const AppHeader: React.FC = observer(() => {
           },
           {
             key: 'imprint',
-            label: 'Imprint',
+            label: t('headerImprintLabel'),
             onClick: () => {
               tracking.track({
                 eventName: 'user-side-bar',
@@ -389,7 +404,7 @@ const AppHeader: React.FC = observer(() => {
           ? [
               {
                 key: 'logout',
-                label: 'Log out',
+                label: t('headerLogOutLabel'),
                 renderIcon: ArrowRight,
                 kind: 'ghost',
                 onClick: logoutWithNotification,
@@ -398,6 +413,43 @@ const AppHeader: React.FC = observer(() => {
           : undefined,
       }}
     />
+  );
+});
+
+const LanguageSelector: React.FC = observer(() => {
+  const {i18n, t} = useTranslation();
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(
+    i18n.resolvedLanguage ?? 'en',
+  );
+
+  useEffect(() => {
+    if (selectedLanguage !== i18n.language) {
+      i18n.changeLanguage(selectedLanguage);
+      localStorage.setItem('language', selectedLanguage);
+    }
+  }, [selectedLanguage, i18n]);
+
+  const handleLanguageChange = (e: OnChangeData<SelectionOption>) => {
+    setSelectedLanguage(e.selectedItem?.id ?? 'en');
+  };
+
+  return (
+    <Layer>
+      <SwitcherDivider />
+      <div className={styles['languageDropdownPadding']}>
+        <Dropdown
+          id="language-dropdown"
+          label={t('languageSelectorLabel')}
+          titleText={t('languageSelectorTitle')}
+          items={languageItems}
+          itemToString={(item) => (item ? item.label : '')}
+          onChange={handleLanguageChange}
+          selectedItem={languageItems.find(
+            (item) => item.id === selectedLanguage,
+          )}
+        />
+      </div>
+    </Layer>
   );
 });
 

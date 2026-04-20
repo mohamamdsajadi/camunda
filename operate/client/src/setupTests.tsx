@@ -21,6 +21,7 @@ import MockBpmnJs from '__mocks__/bpmn-js';
 import MockBpmnIoElementTemplateIconRenderer from '__mocks__/@bpmn-io/element-template-icon-renderer';
 import MockReactMarkdown from '__mocks__/react-markdown';
 import ResizeObserverPolyfill from 'resize-observer-polyfill';
+import {initI18next} from 'modules/i18n/i18next';
 
 vi.mock('dmn-js-shared/lib/base/Manager', () => ({
   default: MockDmnJsSharedManager,
@@ -199,6 +200,7 @@ const localStorageMock = (function () {
 })();
 
 beforeAll(() => {
+  initI18next();
   mockServer.listen({
     onUnhandledRequest: 'error',
   });
